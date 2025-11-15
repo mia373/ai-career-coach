@@ -80,24 +80,18 @@ Be professional, objective, and encouraging."""
         llm = self.create_llm()
         prompt = self.create_prompt()
         
-        '''
-        Add from Handbook.md
-        '''
+        chain = prompt | llm
         
         # Prepare input data
         input_data = self.prepare_input(state)
         
         # Invoke chain (progress shown via LangGraph events)
-        '''
-        Add from Handbook.md
-        '''       
+        response = chain.invoke(input_data)
         
         # Extract content
         content = self.extract_response_content(response)
         
-        '''
-        Add from Handbook.md
-        '''
+        return {self.get_output_key(): content}
 
 
 def competency_analyzer_node(

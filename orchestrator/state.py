@@ -49,10 +49,6 @@ class State(TypedDict):
     data_files: Dict[str, str]
     
     # Output fields from various analysis nodes
-    
-    '''
-    Add from Handbook.md
-    '''
     competency_analyzer_output: str
     gap_analyzer_output: str
     opportunity_finder_output: Annotated[str, reduce_opportunity_output]

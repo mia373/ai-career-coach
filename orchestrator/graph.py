@@ -48,9 +48,7 @@ def create_graph():
     # Add nodes
     workflow.add_node("route_workflow", lambda state: state)  # Entry node that routes
     workflow.add_node("competency_analyzer", competency_analyzer_node)
-    '''
-    Add from Handbook.md
-    '''
+    
     workflow.add_node("gap_analyzer", gap_analyzer_node)
     workflow.add_node("promotion_package", promotion_package_node)
     
@@ -58,9 +56,7 @@ def create_graph():
     workflow.add_node("opportunity_finder", opportunity_finder_with_tools)
     workflow.add_node("tools", tools_node_with_streaming)
     workflow.add_node("process_tool_results", process_tool_results)
-    '''
-    Add from Handbook.md
-    '''
+    
     workflow.add_node("human_review", human_review_node)
 
     workflow.add_node("save_outputs", save_outputs_node)
@@ -80,9 +76,6 @@ def create_graph():
     
     # Define edges for first-time workflow
     # After competency_analyzer, run gap_analyzer and promotion_package in parallel
-    '''
-    Add from Handbook.md
-    '''
     workflow.add_edge("competency_analyzer", "gap_analyzer")
     workflow.add_edge("competency_analyzer", "promotion_package")
     
@@ -93,9 +86,6 @@ def create_graph():
     workflow.add_edge("collect_preferences", "opportunity_finder")
     
     # After opportunity_finder, check if tools need to be called
-    '''
-    Add from Handbook.md
-    '''
     workflow.add_conditional_edges(
         "opportunity_finder",
         should_call_tools,
@@ -132,9 +122,7 @@ def create_graph():
     
     # Compile with memory for checkpointing
     memory = MemorySaver()
-    '''
-    Add from Handbook.md
-    '''
+
     app = workflow.compile(checkpointer=memory)
     
     return app

@@ -96,10 +96,11 @@ async def run_workflow(
     
     # Use astream_events (without stream_mode) to get ALL events
     # This gives us: on_chain_start, on_chain_end, on_tool_start, on_tool_end, on_chat_model_stream, etc.
-    '''
-    Add from Handbook.md
-    '''
-
+    async for event in app.astream_events(
+        initial_state,
+        config=config,
+        version="v2"
+    ):
         # Adapter handles conversion from LangGraph event structure to handler calls
         adapter.process_event(event)
     

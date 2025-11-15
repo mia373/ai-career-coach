@@ -38,9 +38,11 @@ def create_llm(model_name: str = "gemini-2.5-flash", temperature: float = 0.7):
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in environment variables")
     
-    '''
-    Add from Handbook.md
-    '''
+    return ChatGoogleGenerativeAI(
+        model=model_name,
+        temperature=temperature,
+        google_api_key=api_key
+    )
 
 
 def truncate_text(text: str, max_chars: int = 8000, preserve_end: bool = True) -> str:
