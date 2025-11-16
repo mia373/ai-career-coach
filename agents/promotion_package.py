@@ -109,21 +109,20 @@ Use professional, impactful language. Be honest and evidence-based. Never exagge
         return {self.get_output_key(): content}
 
 
-    def promotion_package_node(
-        state: Dict[str, Any],
-        config: RunnableConfig | None = None
-    ) -> Dict[str, Any]:
-        """
-        Node function for LangGraph compatibility.
-        
-        Args:
-            state: Current workflow state
-            config: RunnableConfig (not used, but required for signature)
-        
-        Returns:
-            Dictionary with promotion_package_output
-        """
-        agent = PromotionPackageAgent()
-        
-        return agent.execute(state, config)
+def promotion_package_node(
+    state: Dict[str, Any],
+    config: RunnableConfig | None = None
+) -> Dict[str, Any]:
+    """
+    Node function for LangGraph compatibility.
+    
+    Args:
+        state: Current workflow state
+        config: RunnableConfig (not used, but required for signature)
+    
+    Returns:
+        Dictionary with promotion_package_output
+    """
+    agent = PromotionPackageAgent()
+    return agent.execute(state, config)
 

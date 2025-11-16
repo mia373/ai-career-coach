@@ -122,8 +122,25 @@ def read_data_files() -> Dict[str, str]:
 def markdown_to_html(markdown_text: str) -> str:
     """Simple markdown to HTML converter for basic formatting."""
     import re
+    import json
     
-    html = markdown_text
+    # Check if the content is JSON and format it nicely
+    text = markdown_text.strip()
+    if text.startswith('{') and text.endswith('}'):
+        try:
+            # Try to parse as JSON
+            json_obj = json.loads(text)
+            # Format as pretty JSON in a code block
+            formatted_json = json.dumps(json_obj, indent=2)
+            text = f"```json\n{formatted_json}\n```"
+        except (json.JSONDecodeError, ValueError):
+            # Not valid JSON, continue with markdown processing
+            pass
+    
+    html = text
+    
+    # Code blocks (process before other formatting to preserve them)
+    html = re.sub(r'```(\w+)?\n(.*?)```', r'<pre><code>\2</code></pre>', html, flags=re.DOTALL)
     
     # Headers
     html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
@@ -136,44 +153,70 @@ def markdown_to_html(markdown_text: str) -> str:
     # Lists
     lines = html.split('\n')
     in_list = False
+    list_type = None
     result_lines = []
     
     for line in lines:
-        if line.strip().startswith('- ') or line.strip().startswith('* '):
-            if not in_list:
+        stripped = line.strip()
+        # Skip empty lines but close lists if needed
+        if not stripped:
+            if in_list:
+                result_lines.append(f'</{list_type}>')
+                in_list = False
+                list_type = None
+            result_lines.append('')
+            continue
+            
+        # Check if line is already HTML (from code blocks, headers, etc.)
+        if stripped.startswith('<'):
+            if in_list:
+                result_lines.append(f'</{list_type}>')
+                in_list = False
+                list_type = None
+            result_lines.append(line)
+            continue
+            
+        # Unordered list
+        if stripped.startswith('- ') or stripped.startswith('* '):
+            if not in_list or list_type != 'ul':
+                if in_list:
+                    result_lines.append(f'</{list_type}>')
                 result_lines.append('<ul>')
                 in_list = True
-            item = line.strip()[2:]
+                list_type = 'ul'
+            item = stripped[2:].strip()
             result_lines.append(f'<li>{item}</li>')
-        elif re.match(r'^\d+\.\s+', line.strip()):
-            if not in_list:
+        # Ordered list
+        elif re.match(r'^\d+\.\s+', stripped):
+            if not in_list or list_type != 'ol':
+                if in_list:
+                    result_lines.append(f'</{list_type}>')
                 result_lines.append('<ol>')
                 in_list = True
-            item = re.sub(r'^\d+\.\s+', '', line.strip())
+                list_type = 'ol'
+            item = re.sub(r'^\d+\.\s+', '', stripped)
             result_lines.append(f'<li>{item}</li>')
         else:
             if in_list:
-                if result_lines and result_lines[-1].startswith('<li>'):
-                    result_lines.append('</ul>' if result_lines[-2].startswith('<ul>') else '</ol>')
+                result_lines.append(f'</{list_type}>')
                 in_list = False
-            if line.strip() and not line.strip().startswith('<'):
+                list_type = None
+            # Only wrap in <p> if not already HTML
+            if not stripped.startswith('<'):
                 result_lines.append(f'<p>{line}</p>')
             else:
                 result_lines.append(line)
     
     if in_list:
-        result_lines.append('</ul>')
+        result_lines.append(f'</{list_type}>')
     
     html = '\n'.join(result_lines)
     
     # Links
     html = re.sub(r'\[(.+?)\]\((.+?)\)', r'<a href="\2">\1</a>', html)
     
-    # Code blocks
-    html = re.sub(r'```(\w+)?\n(.*?)```', r'<pre><code>\2</code></pre>', html, flags=re.DOTALL)
-    
-    # Inline code
-    html = re.sub(r'`(.+?)`', r'<code>\1</code>', html)
+    # Inline code (process after other formatting to avoid conflicts)
+    html = re.sub(r'`([^`]+?)`', r'<code>\1</code>', html)
     
     return html
 

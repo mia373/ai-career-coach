@@ -41,16 +41,49 @@ YOUR TASK:
 4. Generate a comprehensive competency framework
 
 OUTPUT FORMAT:
-Provide a structured JSON response with:
-- target_level
-- current_level
-- discipline
-- competency_categories (with requirements, importance, evaluation_criteria)
-- level_differentiators
-- expected_scope
-- expected_impact
+IMPORTANT: Return ONLY markdown text. Do NOT return JSON. Do NOT wrap your response in code blocks.
 
-Be professional, objective, and encouraging."""
+Provide a well-structured markdown document with the following sections:
+
+## Competency Framework Overview
+- **Engineer**: {name}
+- **Current Level**: {current_level}
+- **Target Level**: {target_level}
+- **Discipline**: {discipline}
+
+## Competency Categories
+
+For each category, provide:
+- **Category Name**: [Name]
+- **Importance**: [High/Medium/Low]
+- **Requirements**:
+  - [List of specific requirements]
+- **Evaluation Criteria**:
+  - [How this will be assessed]
+
+Categories to cover:
+1. Technical Proficiency
+2. Problem Solving
+3. Impact & Scope
+4. Leadership & Mentorship
+5. Communication & Collaboration
+6. Autonomy & Initiative
+7. Business Acumen
+8. Quality & Best Practices
+9. Influence
+10. Growth Mindset
+
+## Level Differentiators
+- **From {current_level}**: [What differentiates this level from the previous]
+- **To {target_level}**: [What differentiates this level from the next]
+
+## Expected Scope
+[Describe the expected scope of work and responsibilities]
+
+## Expected Impact
+[Describe the expected impact and outcomes]
+
+Be professional, objective, and encouraging. Use clear headings, bullet points, and structured formatting. Return pure markdown text only - no JSON, no code blocks."""
     
     def prepare_input(self, state: State) -> Dict[str, Any]:
         """Prepare input including company leveling document."""
@@ -90,6 +123,20 @@ Be professional, objective, and encouraging."""
         
         # Extract content
         content = self.extract_response_content(response)
+        
+        # Post-process: Remove JSON code blocks if LLM still returns them
+        # Strip ```json and ``` markers
+        import re
+        content = re.sub(r'^```json\s*\n', '', content, flags=re.MULTILINE)
+        content = re.sub(r'^```\s*\n', '', content, flags=re.MULTILINE)
+        content = re.sub(r'\n```\s*$', '', content, flags=re.MULTILINE)
+        content = content.strip()
+        
+        # If content still looks like JSON (starts with {), try to extract markdown from it
+        if content.startswith('{') and '"competency_categories"' in content:
+            # This is JSON, we need to convert it or ask for regeneration
+            # For now, wrap it in a note that it needs to be regenerated
+            content = "**Note: This output was returned in JSON format. Please regenerate with markdown format.**\n\n" + content
         
         return {self.get_output_key(): content}
 

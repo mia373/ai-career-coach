@@ -13,4 +13,6 @@ build/
 .venv/
 venv/
 .env.local
+Handbook.md
+Langraph.md
 
